@@ -71,7 +71,7 @@ class Uls23(SegmentationAlgorithm):
         input_dir = Path("/input/images/stacked-3d-ct-lesion-volumes/")
 
         # Load the spacings per VOI
-        with open(Path("/input/stacked-3d-volumetric-spacings.json"), 'r') as json_file:
+        with open(Path("/input/stacked_spacing_sample.json"), 'r') as json_file:
             spacings = json.load(json_file)
 
         for input_file in input_dir.glob("*.mha"):
@@ -88,6 +88,8 @@ class Uls23(SegmentationAlgorithm):
 
                 # Unstack the VOI's, perform optional preprocessing and save
                 # them to individual binary files for memory-efficient access
+                print(voi.shape)
+                voi = voi[32:96, 64:192, 64:192]
                 np.save(f"/tmp/voi_{i}.npy", np.array([voi])) # Add dummy batch dimension for nnUnet
 
         end_load_time = time.time()
@@ -131,8 +133,15 @@ class Uls23(SegmentationAlgorithm):
                 segmentation[instance_mask != instance_mask[
                     int(self.z_size / 2), int(self.xy_size / 2), int(self.xy_size / 2)]] = 0
                 segmentation[segmentation != 0] = 1
-
-            predictions[i] = segmentation
+            
+            # Pad segmentations to fit with original image size
+            segmentation_pad = np.pad(segmentation, 
+                      ((32, 32),  
+                       (64, 64),   
+                       (64, 64)),
+                      mode='constant', constant_values=0)
+            
+            predictions[i] = segmentation_pad
 
         predictions = np.concatenate(predictions, axis=0) # Stack predictions
 
