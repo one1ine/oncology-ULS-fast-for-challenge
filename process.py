@@ -71,7 +71,7 @@ class Uls23(SegmentationAlgorithm):
         input_dir = Path("/input/images/stacked-3d-ct-lesion-volumes/")
 
         # Load the spacings per VOI
-        with open(Path("/input/stacked_spacing_sample.json"), 'r') as json_file:
+        with open(Path("/input/stacked-3d-volumetric-spacings.json"), 'r') as json_file:
             spacings = json.load(json_file)
 
         for input_file in input_dir.glob("*.mha"):
