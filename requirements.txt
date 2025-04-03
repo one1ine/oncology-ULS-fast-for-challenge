@@ -8,4 +8,4 @@ click==8.1.5
 batchgenerators==0.23
 blosc2==2.5.1
 acvl_utils==0.2
-torch==2.4.0
+torch==2.3.1
