@@ -60,7 +60,7 @@ COPY --chown=user:user export2onnx.py /opt/app/
 COPY --chown=user:user ./architecture/extensions/nnunetv2/ /opt/algorithm/nnunet/nnunetv2/
 
 # Copy model checkpoint to docker
-COPY --chown=user:user ./architecture/nnUNet_results/ /opt/algorithm/nnunet/nnUNet_results/
+#COPY --chown=user:user ./architecture/nnUNet_results/ /opt/algorithm/nnunet/nnUNet_results/
 
 # Copy container testing data to docker
 #COPY --chown=user:user /architecture/input/ /input/
