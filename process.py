@@ -16,8 +16,8 @@ class Uls23(SegmentationAlgorithm):
     def __init__(self):
         self.image_metadata = None  # Keep track of the metadata of the input volume
         self.id = None  # Keep track of batched volume file name for export
-        self.z_size = 128  # Number of voxels in the z-dimension for each VOI
-        self.xy_size = 256  # Number of voxels in the xy-dimensions for each VOI
+        self.z_size = 128  # Number of voxels in the z-dimension for each input VOI
+        self.xy_size = 256  # Number of voxels in the xy-dimensions for each input VOI
         self.z_size_model = 64 # Number of voxels in the z-dimension that the model takes
         self.xy_size_model = 128 # Number of voxels in the xy-dimensions that the model takes
         self.device = torch.device("cuda")
@@ -28,7 +28,7 @@ class Uls23(SegmentationAlgorithm):
         Starts inference algorithm
         """
         start_time = time.time()
-
+        
         # We need to create the correct output folder, determined by the interface, ourselves
         os.makedirs("/output/images/ct-binary-uls/", exist_ok=True)
 
@@ -42,6 +42,7 @@ class Uls23(SegmentationAlgorithm):
 
     def load_model(self):
         start_model_load_time = time.time()
+        
         # Set up the nnUNetPredictor
         self.predictor = nnUNetPredictor(
             tile_step_size=0.5,
@@ -69,6 +70,7 @@ class Uls23(SegmentationAlgorithm):
         4) Predict per VOI
         """
         start_load_time = time.time()
+        
         # Input directory is determined by the algorithm interface on GC
         input_dir = Path("/input/images/stacked-3d-ct-lesion-volumes/")
 
@@ -88,9 +90,8 @@ class Uls23(SegmentationAlgorithm):
                 voi = image_data[self.z_size * i:self.z_size * (i + 1), :, :]
                 # Note: spacings[i] contains the scan spacing for this VOI
 
-                # Unstack the VOI's, perform optional preprocessing and save
-                # them to individual binary files for memory-efficient access
-                print(voi.shape)
+                # Unstack the VOI's, perform optional preprocessing (in this case, cropping them to the 
+                # center 64x128x128 voxels), and save them to individual binary files for memory-efficient access
                 voi = voi[32:96, 64:192, 64:192]
                 np.save(f"/tmp/voi_{i}.npy", np.array([voi])) # Add dummy batch dimension for nnUnet
 
@@ -107,6 +108,7 @@ class Uls23(SegmentationAlgorithm):
         """
         start_inference_time = time.time()
         predictions = []
+        
         for i, voi_spacing in enumerate(spacings):
             # Load the 3D array from the binary file
             voi = torch.from_numpy(np.load(f"/tmp/voi_{i}.npy"))
@@ -125,6 +127,7 @@ class Uls23(SegmentationAlgorithm):
         :param predictions: list of numpy arrays containing the predicted lesion masks per VOI
         """
         start_postprocessing_time = time.time()
+        
         # Run postprocessing code here, for the baseline we only remove any
         # segmentation outputs not connected to the center lesion prediction
         for i, segmentation in enumerate(predictions):
