@@ -16,8 +16,10 @@ class Uls23(SegmentationAlgorithm):
     def __init__(self):
         self.image_metadata = None  # Keep track of the metadata of the input volume
         self.id = None  # Keep track of batched volume file name for export
-        self.z_size = 64  # Number of voxels in the z-dimension for each VOI
-        self.xy_size = 128  # Number of voxels in the xy-dimensions for each VOI
+        self.z_size = 128  # Number of voxels in the z-dimension for each VOI
+        self.xy_size = 256  # Number of voxels in the xy-dimensions for each VOI
+        self.z_size_model = 64 # Number of voxels in the z-dimension that the model takes
+        self.xy_size_model = 128 # Number of voxels in the xy-dimensions that the model takes
         self.device = torch.device("cuda")
         self.predictor = None # nnUnet predictor
 
@@ -131,7 +133,7 @@ class Uls23(SegmentationAlgorithm):
             if num_features > 1:
                 print("Found multiple lesion predictions")
                 segmentation[instance_mask != instance_mask[
-                    int(self.z_size / 2), int(self.xy_size / 2), int(self.xy_size / 2)]] = 0
+                    int(self.z_size_model / 2), int(self.xy_size_model / 2), int(self.xy_size_model / 2)]] = 0
                 segmentation[segmentation != 0] = 1
             
             # Pad segmentations to fit with original image size
