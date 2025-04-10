@@ -88,11 +88,21 @@ class Uls23(SegmentationAlgorithm):
             image_data = sitk.GetArrayFromImage(self.image_metadata)
             for i in range(int(image_data.shape[0] / self.z_size)):
                 voi = image_data[self.z_size * i:self.z_size * (i + 1), :, :]
-                # Note: spacings[i] contains the scan spacing for this VOI
 
-                # Convert the VOI back to a SimpleITK image to preserve metadata
+                # Convert the VOI back to a SimpleITK image
                 voi_image = sitk.GetImageFromArray(voi)
-                voi_image.CopyInformation(self.image_metadata)
+
+                # Calculate and set the metadata for the unstacked VOI
+                original_origin = self.image_metadata.GetOrigin()
+                original_spacing = self.image_metadata.GetSpacing()
+                new_origin = [
+                    original_origin[0],  # x-origin remains the same
+                    original_origin[1],  # y-origin remains the same
+                    original_origin[2] + i * self.z_size * original_spacing[2],  # Adjust z-origin for each VOI
+                ]
+                voi_image.SetOrigin(new_origin)
+                voi_image.SetSpacing(original_spacing)
+                voi_image.SetDirection(self.image_metadata.GetDirection())
 
                 # Define the cropping region in physical space
                 start_index = [32, 64, 64]  # Start indices for cropping
@@ -108,6 +118,7 @@ class Uls23(SegmentationAlgorithm):
                 
         end_load_time = time.time()
         print(f"Data pre-processing runtime: {end_load_time - start_load_time}s")
+
 
         return spacings
 
@@ -134,12 +145,11 @@ class Uls23(SegmentationAlgorithm):
 
     def postprocess(self, predictions):
         """
-        Runs post-processing and saves stacked predictions.
+        Runs post-processing and saves predictions for each VOI.
         :param predictions: list of numpy arrays containing the predicted lesion masks per VOI
         """
         start_postprocessing_time = time.time()
-        # Run postprocessing code here, for the baseline we only remove any
-        # segmentation outputs not connected to the center lesion prediction
+
         for i, segmentation in enumerate(predictions):
             print(f"Post-processing prediction {i}")
             instance_mask, num_features = ndimage.label(segmentation)
@@ -151,27 +161,28 @@ class Uls23(SegmentationAlgorithm):
 
             # Pad segmentations to fit with original image size
             segmentation_pad = np.pad(segmentation, 
-                    ((32, 32),  
-                    (64, 64),   
-                    (64, 64)),
-                    mode='constant', constant_values=0)
+                                    ((32, 32),  
+                                    (64, 64),   
+                                    (64, 64)),
+                                    mode='constant', constant_values=0)
 
             # Convert padded segmentation back to a SimpleITK image
             segmentation_image = sitk.GetImageFromArray(segmentation_pad)
 
             # Update the origin to account for the padding
-            original_origin = self.image_metadata.GetOrigin()
-            original_spacing = self.image_metadata.GetSpacing()
+            # Use the metadata of the corresponding VOI instead of the stacked image
+            voi_origin = predictions[i].GetOrigin()  # Assuming predictions[i] is a SimpleITK image
+            voi_spacing = predictions[i].GetSpacing()
             new_origin = [
-                original_origin[0] - 64 * original_spacing[0],  # Adjust for x padding
-                original_origin[1] - 64 * original_spacing[1],  # Adjust for y padding
-                original_origin[2] - 32 * original_spacing[2],  # Adjust for z padding
+                voi_origin[0] - 64 * voi_spacing[0],  # Adjust for x padding
+                voi_origin[1] - 64 * voi_spacing[1],  # Adjust for y padding
+                voi_origin[2] - 32 * voi_spacing[2],  # Adjust for z padding
             ]
             segmentation_image.SetOrigin(new_origin)
 
-            # Copy the direction and spacing from the original metadata
-            segmentation_image.SetDirection(self.image_metadata.GetDirection())
-            segmentation_image.SetSpacing(self.image_metadata.GetSpacing())
+            # Copy the direction and spacing from the VOI metadata
+            segmentation_image.SetDirection(predictions[i].GetDirection())
+            segmentation_image.SetSpacing(voi_spacing)
 
             # Save the updated segmentation image
             predictions[i] = sitk.GetArrayFromImage(segmentation_image)
@@ -180,7 +191,7 @@ class Uls23(SegmentationAlgorithm):
 
         # Create mask image and copy over metadata
         mask = sitk.GetImageFromArray(predictions)
-        mask.CopyInformation(self.image_metadata)
+        mask.CopyInformation(predictions[0])  # Copy metadata from the first VOI
 
         sitk.WriteImage(mask, f"/output/images/ct-binary-uls/{self.id.name}")
         print("Output dir contents:", os.listdir("/output/images/ct-binary-uls/"))
