@@ -108,8 +108,7 @@ class Uls23(SegmentationAlgorithm):
                 voi_shape = voi_image.GetSize()
                 print(f"VOI shape: {voi_shape}")
                 start_index = [32, 64, 64]  # Start indices for cropping
-                end_index = [min(dim, idx) for dim, idx in zip(voi_shape, [96, 192, 192])]    # End indices for cropping
-                crop_size = [end - start for start, end in zip(start_index, end_index)]
+                crop_size = [64, 128, 128]  # Size of the cropped region
 
                 # Perform cropping using SimpleITK
                 voi_cropped = sitk.RegionOfInterest(voi_image, size=crop_size, index=start_index)
