@@ -107,8 +107,8 @@ class Uls23(SegmentationAlgorithm):
                 # Define the cropping region in physical space
                 voi_shape = voi_image.GetSize()
                 print(f"VOI shape: {voi_shape}")
-                start_index = [32, 64, 64]  # Start indices for cropping
-                crop_size = [64, 128, 128]  # Size of the cropped region
+                start_index = [64, 64, 32]  # Start indices for cropping
+                crop_size = [128, 128, 64]  # Size of the cropped region
 
                 # Perform cropping using SimpleITK
                 voi_cropped = sitk.RegionOfInterest(voi_image, size=crop_size, index=start_index)
@@ -162,9 +162,9 @@ class Uls23(SegmentationAlgorithm):
 
             # Pad segmentations to fit with original image size
             segmentation_pad = np.pad(segmentation, 
-                                    ((32, 32),  
-                                    (64, 64),   
-                                    (64, 64)),
+                                    ((64, 64),   
+                                    (64, 64),
+                                    (32, 32)),
                                     mode='constant', constant_values=0)
 
             # Convert padded segmentation back to a SimpleITK image
