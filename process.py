@@ -157,7 +157,7 @@ class Uls23(SegmentationAlgorithm):
             if num_features > 1:
                 print("Found multiple lesion predictions")
                 segmentation[instance_mask != instance_mask[
-                    int(self.z_size / 2), int(self.xy_size / 2), int(self.xy_size / 2)]] = 0
+                    int(self.xy_size / 2), int(self.xy_size / 2), int(self.z_size / 2)]] = 0
                 segmentation[segmentation != 0] = 1
 
             # Pad segmentations to fit with original image size
