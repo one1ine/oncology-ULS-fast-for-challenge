@@ -106,7 +106,6 @@ class Uls23(SegmentationAlgorithm):
 
                 # Define the cropping region in physical space
                 voi_shape = voi_image.GetSize()
-                print(f"VOI shape: {voi_shape}")
                 start_index = [64, 64, 32]  # Start indices for cropping
                 crop_size = [128, 128, 64]  # Size of the cropped region
 
@@ -157,7 +156,7 @@ class Uls23(SegmentationAlgorithm):
             if num_features > 1:
                 print("Found multiple lesion predictions")
                 segmentation[instance_mask != instance_mask[
-                    int(self.xy_size / 2), int(self.xy_size / 2), int(self.z_size / 2)]] = 0
+                    int(self.z_size_model / 2), int(self.xy_size_model / 2), int(self.xy_size_model / 2)]] = 0
                 segmentation[segmentation != 0] = 1
 
             # Pad segmentations to fit with original image size
@@ -167,22 +166,22 @@ class Uls23(SegmentationAlgorithm):
                                     (64, 64)),
                                     mode='constant', constant_values=0)
 
-            # Convert padded segmentation back to a SimpleITK image
+            # Convert padded segmentation and original segmentation back to a SimpleITK image
             segmentation_image = sitk.GetImageFromArray(segmentation_pad)
-
+            segmentation_original = sitk.GetImageFromArray(segmentation)
             # Update the origin to account for the padding
             # Use the metadata of the corresponding VOI instead of the stacked image
-            voi_origin = predictions[i].GetOrigin()  # Assuming predictions[i] is a SimpleITK image
-            voi_spacing = predictions[i].GetSpacing()
+            voi_origin = segmentation_original.GetOrigin()  # Assuming predictions[i] is a SimpleITK image
+            voi_spacing = segmentation_original.GetSpacing()
             new_origin = [
-                voi_origin[0] - 64 * voi_spacing[0],  # Adjust for x padding
+                voi_origin[0] - 32 * voi_spacing[0],  # Adjust for x padding
                 voi_origin[1] - 64 * voi_spacing[1],  # Adjust for y padding
-                voi_origin[2] - 32 * voi_spacing[2],  # Adjust for z padding
+                voi_origin[2] - 64 * voi_spacing[2],  # Adjust for z padding
             ]
             segmentation_image.SetOrigin(new_origin)
 
             # Copy the direction and spacing from the VOI metadata
-            segmentation_image.SetDirection(predictions[i].GetDirection())
+            segmentation_image.SetDirection(segmentation_original.GetDirection())
             segmentation_image.SetSpacing(voi_spacing)
 
             # Save the updated segmentation image
