@@ -169,14 +169,14 @@ class Uls23(SegmentationAlgorithm):
             # Convert padded segmentation and original segmentation back to a SimpleITK image
             segmentation_image = sitk.GetImageFromArray(segmentation_pad)
             segmentation_original = sitk.GetImageFromArray(segmentation)
+            
             # Update the origin to account for the padding
-            # Use the metadata of the corresponding VOI instead of the stacked image
-            voi_origin = segmentation_original.GetOrigin()  # Assuming predictions[i] is a SimpleITK image
+            voi_origin = segmentation_original.GetOrigin() 
             voi_spacing = segmentation_original.GetSpacing()
             new_origin = [
-                voi_origin[0] - 32 * voi_spacing[0],  # Adjust for x padding
-                voi_origin[1] - 64 * voi_spacing[1],  # Adjust for y padding
-                voi_origin[2] - 64 * voi_spacing[2],  # Adjust for z padding
+                voi_origin[0] - 32 * voi_spacing[0],  # Adjust for z padding
+                voi_origin[1] - 64 * voi_spacing[1],  # Adjust for x padding
+                voi_origin[2] - 64 * voi_spacing[2],  # Adjust for y padding
             ]
             segmentation_image.SetOrigin(new_origin)
 
@@ -191,8 +191,8 @@ class Uls23(SegmentationAlgorithm):
 
         # Create mask image and copy over metadata
         mask = sitk.GetImageFromArray(predictions)
-        mask.CopyInformation(predictions[0])  # Copy metadata from the first VOI
-
+        mask.CopyInformation(self.image_metadata) 
+        
         sitk.WriteImage(mask, f"/output/images/ct-binary-uls/{self.id.name}")
         print("Output dir contents:", os.listdir("/output/images/ct-binary-uls/"))
         print("Output batched image shape:", predictions.shape)
