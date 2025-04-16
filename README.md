@@ -5,4 +5,4 @@ This folder contains the code to build a GrandChallenge algorithm out of the fas
 
 - `/architecture/extensions/nnunetv2` contains the extensions to the nnUNetv2 framework that should be merged with your local install.
 - `/architecture/nnUNet_results/` contains the model weights and plans file of the faster model.
-- `/architecture/input/` contains an example of a stacked VOI image and the accompanying spacings file. Uncommenting line 64 in the Dockerfile will allow you to run your algorithm locally with this data and check whether it runs inference correctly.
+- `/architecture/input/` contains an example of a stacked VOI image and the accompanying spacings file. Uncommenting line 63 and 66 in the Dockerfile will allow you to run your algorithm locally with this data and check whether it runs inference correctly.
