@@ -112,6 +112,16 @@ class Uls23(SegmentationAlgorithm):
                 # Perform cropping using SimpleITK
                 voi_cropped = sitk.RegionOfInterest(voi_image, size=crop_size, index=start_index)
 
+                # Update the origin of the cropped VOI
+                cropped_origin = [
+                    voi_image.GetOrigin()[0] + start_index[0] * voi_image.GetSpacing()[0],
+                    voi_image.GetOrigin()[1] + start_index[1] * voi_image.GetSpacing()[1],
+                    voi_image.GetOrigin()[2] + start_index[2] * voi_image.GetSpacing()[2],
+                ]
+                voi_cropped.SetOrigin(cropped_origin)
+                voi_cropped.SetSpacing(voi_image.GetSpacing())
+                voi_cropped.SetDirection(voi_image.GetDirection())
+                
                 # Save the cropped VOI to a binary file
                 voi_cropped_array = sitk.GetArrayFromImage(voi_cropped)
                 np.save(f"/tmp/voi_{i}.npy", np.array([voi_cropped_array]))  # Add dummy batch dimension for nnUnet
@@ -173,15 +183,15 @@ class Uls23(SegmentationAlgorithm):
             # Update the origin to account for the padding
             voi_origin = segmentation_original.GetOrigin() 
             voi_spacing = segmentation_original.GetSpacing()
+            voi_direction = segmentation_original.GetDirection()
+            
             new_origin = [
                 voi_origin[0] - 32 * voi_spacing[0],  # Adjust for z padding
                 voi_origin[1] - 64 * voi_spacing[1],  # Adjust for x padding
                 voi_origin[2] - 64 * voi_spacing[2],  # Adjust for y padding
             ]
             segmentation_image.SetOrigin(new_origin)
-
-            # Copy the direction and spacing from the VOI metadata
-            segmentation_image.SetDirection(segmentation_original.GetDirection())
+            segmentation_image.SetDirection(voi_direction)
             segmentation_image.SetSpacing(voi_spacing)
 
             # Save the updated segmentation image
