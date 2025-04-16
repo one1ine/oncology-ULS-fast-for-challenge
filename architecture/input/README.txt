@@ -1,0 +1,2 @@
+In this folder, you find an example stacked .mha image and its json spacing file. If you want to test your model, you can use these images. Note that the current .mha file is a reference to the real one, because the image is too large to put on GitHub. 
+If you want to load in weights locally, you can put them in this folder too, in a folder called nnUNet_results. For the baseline weights of the model that takes smaller input images, you can see Zenodo. Simply unzip the nnUNet_results file and put it in this directory.
