@@ -10,8 +10,8 @@ RUN apt-get update && \
     wget \
     unzip \
     libopenblas-dev \
-    python3.9 \
-    python3.9-dev \
+    python3.10 \
+    python3.10-dev \
     python3-pip \
     nano \
     && \
@@ -20,15 +20,16 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
-RUN python3.9 -m pip install --no-cache-dir --upgrade pip
+RUN python3.10 -m pip install --no-cache-dir --upgrade pip
 COPY requirements.txt /tmp/requirements.txt
-RUN python3.9 -m pip install --no-cache-dir -r /tmp/requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+RUN python3.10 -m pip install --no-cache-dir -r /tmp/requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
 
 # Configure Git, clone the repository without checking out, then checkout the specific commit
+# 947eafbb9adb5eb06b9171330b4688e006e6f301
 RUN git config --global advice.detachedHead false && \
     git clone --no-checkout https://github.com/MIC-DKFZ/nnUNet.git /opt/algorithm/nnunet/ && \
     cd /opt/algorithm/nnunet/ && \
-    git checkout 947eafbb9adb5eb06b9171330b4688e006e6f301
+    git checkout 0d042347d9587b8a12b40377066b3eeb5df102bd
 
 # Install a few dependencies that are not automatically installed
 RUN pip3 install \
@@ -70,5 +71,4 @@ ENV nnUNet_raw="/opt/algorithm/nnunet/nnUNet_raw" \
     nnUNet_preprocessed="/opt/algorithm/nnunet/nnUNet_preprocessed" \
     nnUNet_results="/opt/algorithm/nnunet/nnUNet_results"
 
-#ENTRYPOINT [ "python3.9", "-m", "process"]
-ENTRYPOINT [ "python3.9", "-m", "export2onnx"]
+ENTRYPOINT [ "python3.10", "-m", "process"]
