@@ -11,6 +11,7 @@ RUN apt-get update && \
     unzip \
     libopenblas-dev \
     python3.10 \
+    python3.10-distutils \
     python3.10-dev \
     python3-pip \
     nano \
@@ -19,8 +20,13 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt-get remove -y python3-pip && \
+    wget https://bootstrap.pypa.io/get-pip.py && \
+    python3.10 get-pip.py && \
+    rm get-pip.py
+
 # Upgrade pip
-RUN python3.10 -m pip install --no-cache-dir --upgrade pip
+RUN python3.10 -m pip install --no-cache-dir --upgrade pip setuptools
 COPY requirements.txt /tmp/requirements.txt
 RUN python3.10 -m pip install --no-cache-dir -r /tmp/requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
 

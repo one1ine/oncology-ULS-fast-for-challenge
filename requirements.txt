@@ -32,7 +32,7 @@ msgpack==1.1.0
 ndindex==1.9.2
 networkx==3.4.2
 nibabel==5.3.2
-nnunetv2==2.6.1
+#nnunetv2==2.6.1
 numexpr==2.10.2
 numpy==2.2.6
 nvidia-cublas-cu12==12.6.4.1
@@ -65,6 +65,7 @@ scikit-image==0.25.2
 scikit-learn==1.6.1
 scipy==1.15.3
 seaborn==0.13.2
+setuptools
 simpleitk==2.5.0
 six==1.17.0
 sympy==1.14.0
