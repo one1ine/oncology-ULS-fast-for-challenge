@@ -54,9 +54,10 @@ class Uls23(SegmentationAlgorithm):
             allow_tqdm=False
         )
         # Initialize the network architecture, loads the checkpoint
-        #"/opt/ml/model/nnunet/nnUNet_results/Dataset601_Full_128_64/nnUNetTrainer_ULS_500_QuarterLR__nnUNetPlans_shallow__3d_fullres_resenc"
+        #"/opt/algorithm/nnunet/nnUNet_results/Dataset601_Full_128_64/nnUNetTrainer_ULS_500_QuarterLR__nnUNetPlans_shallow__3d_fullres_resenc"
+        #
         self.predictor.initialize_from_trained_model_folder(
-            "/opt/algorithm/nnunet/nnUNet_results/Dataset601_Full_128_64/nnUNetTrainer_ULS_500_QuarterLR__nnUNetPlans_shallow__3d_fullres_resenc",
+            "/opt/ml/model/Dataset601_Full_128_64/nnUNetTrainer_ULS_500_QuarterLR__nnUNetPlans_shallow__3d_fullres_resenc",
             use_folds=("all"),
             checkpoint_name="checkpoint_best.pth",
         )
